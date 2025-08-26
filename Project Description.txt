@@ -1,0 +1,45 @@
+Development Plan for PDF Watermark and Digital Signature Tool
+
+1. Technology Stack
+- Backend: Node.js with Express.js for API endpoints (file upload, processing, authentication).
+- Frontend: ReactJS for UI components, using hooks for state management, Axios for API calls.
+- Database: MySQL for initial storage (user data, file metadata, signatures). Use Sequelize ORM for queries. Design schema to be modular for future storage changes (e.g., migration to cloud storage like S3).
+- Other: PDF libraries - pdf-lib for watermark/signature addition; multer for multi-file uploads; crypto for signatures.
+
+2. Watermark Module Workflow
+- Entry: User logs in/enters tool via dashboard. Select "Watermark" from menu.
+- Upload: Drag-and-drop or select multiple PDFs. Validate file types/sizes. Store temporarily on server.
+- Configuration:
+  - Input watermark text/image.
+  - Subfunctions: Adjust opacity, font size/color (for text), scale/rotation (for image).
+  - Position: Drag on preview canvas or select presets (center, corners, tile).
+  - Preview: Real-time render on sample page.
+- Processing: Apply watermark to each file/page via pdf-lib. Support batch processing.
+- Output: Download watermarked PDFs or save to user account. Log action in DB.
+- Support Functions: Undo/redo changes; error handling (e.g., corrupt PDFs); progress bar for multi-file.
+
+3. Digital Signature Module Workflow
+- Entry: From dashboard, select "Digital Signature".
+- Upload: Multi-file PDF upload, similar to watermark.
+- Configuration:
+  - Upload certificate (PKCS#12/PFX) or generate self-signed.
+  - Subfunctions: Position signature on page (drag/select coordinates); add timestamp; reason field.
+  - Visibility: Visible/invisible signature; customize appearance (name, date, image).
+  - Preview: Show signed PDF mockup.
+- Processing: Use pdf-lib or node-signpdf to embed signature. Verify certificate chain.
+- Output: Download signed PDFs or save. Store signature metadata in DB.
+- Support Functions: Certificate validation; multi-signature support; revocation check; progress for batches.
+
+4. Next Phase: User Roles
+- Implementation After Core Modules: Add JWT authentication for roles.
+- Roles:
+  - Uploader: Upload files, add watermark/signature, submit for approval. View own files/status.
+  - Approver: Review submitted files (view history, previews). Approve/reject with comments. On approval, enable next actions (e.g., archive, share, further edits - to be defined later). Reject triggers notifications.
+- Workflow Integration: Dashboard shows role-based views. Files move through states (pending, approved, rejected) in DB. Notifications via email/WebSocket.
+- Expansion: APIs for interactions (e.g., approve endpoint). Ensure backward compatibility with core modules.
+
+5. UI Requirements
+modern, friendly to user even to user who know basic in technology, easy to use.
+- Modern Design: Use Material-UI or Ant Design for React components. Clean layout with cards, modals.
+- User-Friendly: Intuitive navigation (sidebar menu, breadcrumbs). Tooltips/guides for non-tech users. Mobile-responsive.
+- Ease of Use: Step-by-step wizards for modules (upload > config > preview > apply). Drag-and-drop everywhere. Minimal clicks; auto-save configs. Error messages in plain language. Accessibility: ARIA labels, keyboard nav.
