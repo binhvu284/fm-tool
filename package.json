@@ -7,9 +7,12 @@
     "frontend"
   ],
   "scripts": {
-    "rundev": "concurrently -n backend,frontend -c green,cyan \"npm:dev --workspace backend\" \"npm:dev --workspace frontend\""
+    "rundev": "concurrently -n backend,frontend -c green,cyan \"npm:dev --workspace backend\" \"npm:dev --workspace frontend\" --kill-others-on-fail",
+    "rundev-safe": "npm run dev --workspace backend & timeout 5 & npm run dev --workspace frontend",
+    "rundev-original": "concurrently -n backend,frontend -c green,cyan \"npm:dev --workspace backend\" \"npm:dev --workspace frontend\""
   },
   "devDependencies": {
-    "concurrently": "^9.0.0"
+    "concurrently": "^9.0.0",
+    "wait-on": "^8.0.4"
   }
 }

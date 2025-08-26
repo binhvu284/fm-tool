@@ -74,13 +74,21 @@ export default function Dashboard() {
   const [timeRangeFromHour, setTimeRangeFromHour] = useState('');
   const [timeRangeToHour, setTimeRangeToHour] = useState('');
 
-  const fetchFiles = async () => {
+  const fetchFiles = async (retryCount = 0) => {
     try {
       const { data } = await http.get('/api/files');
       setFiles(data);
       setBackendDown(false);
     } catch (e) {
+      console.warn('Failed to fetch files:', e.message);
       setBackendDown(true);
+      
+      // Auto-retry on initial load (up to 3 times with increasing delay)
+      if (retryCount < 3 && (e.code === 'ECONNREFUSED' || e.code === 'ERR_NETWORK')) {
+        const delay = (retryCount + 1) * 2000; // 2s, 4s, 6s delays
+        console.log(`Retrying in ${delay/1000}s...`);
+        setTimeout(() => fetchFiles(retryCount + 1), delay);
+      }
     }
   };
 
