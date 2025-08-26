@@ -32,6 +32,7 @@ export default function WatermarkPage() {
   // image settings
   const [imageData, setImageData] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [imageSize, setImageSize] = useState(50); // Image size as percentage
   const [resultUrls, setResultUrls] = useState([]);
   const [previewSrc, setPreviewSrc] = useState(null);
   const [previewBusy, setPreviewBusy] = useState(false);
@@ -56,6 +57,7 @@ export default function WatermarkPage() {
     setMosaic(false);
     setImageData(null);
     setImagePreview(null);
+    setImageSize(50);
     setPreviewSrc(null);
   };
 
@@ -145,6 +147,7 @@ export default function WatermarkPage() {
       payload.options.hexColor = color;
     } else if (mode === 'image') {
       payload.imageData = imageData;
+      payload.options.imageSize = imageSize / 100; // Convert percentage to decimal
     }
     return payload;
   };
@@ -341,6 +344,21 @@ export default function WatermarkPage() {
                 {imagePreview && (
                   <Box sx={{ mt:1 }}>
                     <img src={imagePreview} alt="preview" style={{ maxWidth:'100%', maxHeight:120, objectFit:'contain', borderRadius:4, border:'1px solid #eee' }} />
+                  </Box>
+                )}
+                {imageData && (
+                  <Box sx={{ mt: 2 }}>
+                    <Typography variant="caption">Size: {imageSize}%</Typography>
+                    <Slider 
+                      size="small" 
+                      value={imageSize} 
+                      onChange={(_, v) => setImageSize(v)} 
+                      min={10} 
+                      max={200} 
+                      step={5}
+                      valueLabelDisplay="auto"
+                      valueLabelFormat={(value) => `${value}%`}
+                    />
                   </Box>
                 )}
               </Box>

@@ -196,6 +196,7 @@ export async function applyImageWatermark(
     rotate = 0,
     position = "center",
     mosaic = false,
+    imageSize = 0.5, // Size as decimal (e.g., 0.5 = 50%)
     width: targetW,
     height: targetH,
   } = options;
@@ -211,8 +212,17 @@ export async function applyImageWatermark(
 
   const naturalW = embedded.width;
   const naturalH = embedded.height;
-  const imgW = targetW || naturalW;
-  const imgH = targetH || naturalH;
+  
+  // Calculate size based on imageSize percentage if no explicit width/height provided
+  let imgW, imgH;
+  if (targetW && targetH) {
+    imgW = targetW;
+    imgH = targetH;
+  } else {
+    // Use imageSize percentage to scale the image
+    imgW = naturalW * imageSize;
+    imgH = naturalH * imageSize;
+  }
 
   pages.forEach((p) => {
     const { width, height } = p.getSize();
