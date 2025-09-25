@@ -63,7 +63,7 @@ export default function Dashboard() {
   const [selected, setSelected] = useState([]); // selected file ids
   const [errorMsg, setErrorMsg] = useState('');
   const [backendDown, setBackendDown] = useState(false);
-  
+
   // Time filter dropdown states
   const [timeFilterAnchor, setTimeFilterAnchor] = useState(null);
   const [timeFilterTab, setTimeFilterTab] = useState(0); // 0: relative, 1: custom, 2: range
@@ -82,11 +82,11 @@ export default function Dashboard() {
     } catch (e) {
       console.warn('Failed to fetch files:', e.message);
       setBackendDown(true);
-      
+
       // Auto-retry on initial load (up to 3 times with increasing delay)
       if (retryCount < 3 && (e.code === 'ECONNREFUSED' || e.code === 'ERR_NETWORK')) {
         const delay = (retryCount + 1) * 2000; // 2s, 4s, 6s delays
-        console.log(`Retrying in ${delay/1000}s...`);
+        console.log(`Retrying in ${delay / 1000}s...`);
         setTimeout(() => fetchFiles(retryCount + 1), delay);
       }
     }
@@ -134,7 +134,7 @@ export default function Dashboard() {
   const handleDownload = async () => {
     if (!menuFile) return;
     try {
-      const res = await fetch(`/api/files/${menuFile.id}/download`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')||''}` } });
+      const res = await fetch(`/api/files/${menuFile.id}/download`, { headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` } });
       if (!res.ok) return;
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
@@ -145,7 +145,7 @@ export default function Dashboard() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-    } catch {}
+    } catch { }
     closeMenu();
   };
   const handleDelete = async () => {
@@ -159,10 +159,10 @@ export default function Dashboard() {
       await http.delete(`/api/files/${id}`);
       // Remove from persisted watermark queue and notify listeners
       try {
-        const q = JSON.parse(localStorage.getItem('wm_queue')||'[]');
+        const q = JSON.parse(localStorage.getItem('wm_queue') || '[]');
         const newQ = q.filter(x => String(x) !== String(id));
         localStorage.setItem('wm_queue', JSON.stringify(newQ));
-      } catch {}
+      } catch { }
       window.dispatchEvent(new CustomEvent('wm-files-deleted', { detail: { ids: [String(id)] } }));
     } catch (e) {
       // If failed, refetch to restore
@@ -171,11 +171,11 @@ export default function Dashboard() {
   };
 
   const toggleSelectAll = (e) => {
-  const ids = sorted.map(f=>f.id);
-  if (e.target.checked) setSelected(ids); else setSelected([]);
+    const ids = sorted.map(f => f.id);
+    if (e.target.checked) setSelected(ids); else setSelected([]);
   };
   const toggleOne = (id) => {
-    setSelected(sel => sel.includes(id)? sel.filter(x=>x!==id): [...sel,id]);
+    setSelected(sel => sel.includes(id) ? sel.filter(x => x !== id) : [...sel, id]);
   };
   const bulkDelete = async () => {
     if (!selected.length) return;
@@ -186,10 +186,10 @@ export default function Dashboard() {
     try {
       await http.post('/api/files/bulk/delete', { ids });
       try {
-        const q = JSON.parse(localStorage.getItem('wm_queue')||'[]');
+        const q = JSON.parse(localStorage.getItem('wm_queue') || '[]');
         const newQ = q.filter(x => !ids.map(String).includes(String(x)));
         localStorage.setItem('wm_queue', JSON.stringify(newQ));
-      } catch {}
+      } catch { }
       window.dispatchEvent(new CustomEvent('wm-files-deleted', { detail: { ids: ids.map(String) } }));
     } catch {
       fetchFiles();
@@ -198,7 +198,7 @@ export default function Dashboard() {
   const bulkDownload = async () => {
     if (!selected.length) return;
     try {
-      const res = await fetch('/api/files/bulk/download', { method:'POST', headers:{ 'Content-Type':'application/json', Authorization: `Bearer ${localStorage.getItem('token')||''}` }, body: JSON.stringify({ ids: selected }) });
+      const res = await fetch('/api/files/bulk/download', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token') || ''}` }, body: JSON.stringify({ ids: selected }) });
       if (!res.ok) return;
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
@@ -209,7 +209,7 @@ export default function Dashboard() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-    } catch {}
+    } catch { }
   };
 
   // Time range filter helper
@@ -246,9 +246,9 @@ export default function Dashboard() {
   };
 
   const isTimeFilterActive = () => {
-    return timeRange !== 'all' || 
-           (timeFilterTab === 1 && customTimeValue) ||
-           (timeFilterTab === 2 && (dateRangeFrom || dateRangeTo));
+    return timeRange !== 'all' ||
+      (timeFilterTab === 1 && customTimeValue) ||
+      (timeFilterTab === 2 && (dateRangeFrom || dateRangeTo));
   };
 
   const getTimeFilterDescription = () => {
@@ -316,7 +316,7 @@ export default function Dashboard() {
     if (timeRange !== 'all') {
       const fileDate = f.createdAt ? new Date(f.createdAt) : null;
       if (!fileDate) return false;
-      
+
       if (timeRange === 'range') {
         // Date range filtering with optional time
         if (dateRangeFrom) {
@@ -348,24 +348,24 @@ export default function Dashboard() {
     return true;
   });
 
-  const compare = (a,b,key) => {
+  const compare = (a, b, key) => {
     let va, vb;
-    switch(key){
-      case 'name': va=a.originalName.toLowerCase(); vb=b.originalName.toLowerCase(); break;
-      case 'uploaded': va= new Date(a.createdAt||0).getTime(); vb=new Date(b.createdAt||0).getTime(); break;
-      case 'status': va=(a.status==='approved')?1:0; vb=(b.status==='approved')?1:0; break;
-      case 'watermark': va= a.watermarkApplied?1:0; vb= b.watermarkApplied?1:0; break;
-      case 'signature': va= a.signatureApplied?1:0; vb= b.signatureApplied?1:0; break;
-      case 'id': default: va=a.id; vb=b.id; break;
+    switch (key) {
+      case 'name': va = a.originalName.toLowerCase(); vb = b.originalName.toLowerCase(); break;
+      case 'uploaded': va = new Date(a.createdAt || 0).getTime(); vb = new Date(b.createdAt || 0).getTime(); break;
+      case 'status': va = (a.status === 'approved') ? 1 : 0; vb = (b.status === 'approved') ? 1 : 0; break;
+      case 'watermark': va = a.watermarkApplied ? 1 : 0; vb = b.watermarkApplied ? 1 : 0; break;
+      case 'signature': va = a.signatureApplied ? 1 : 0; vb = b.signatureApplied ? 1 : 0; break;
+      case 'id': default: va = a.id; vb = b.id; break;
     }
     if (va < vb) return -1; if (va > vb) return 1; return 0;
   };
-  const sorted = [...filtered].sort((a,b)=> {
-    const c = compare(a,b,orderBy);
-    return order === 'asc'? c : -c;
+  const sorted = [...filtered].sort((a, b) => {
+    const c = compare(a, b, orderBy);
+    return order === 'asc' ? c : -c;
   });
 
-  const allVisibleIds = sorted.map(f=>f.id);
+  const allVisibleIds = sorted.map(f => f.id);
 
   const handleSort = (col) => {
     if (orderBy === col) {
@@ -386,20 +386,20 @@ export default function Dashboard() {
           <Typography variant="body2" color="text.secondary">or click to select</Typography>
           {uploading && <Box sx={{ mt: 2 }}><LinearProgress variant="determinate" value={progress} /></Box>}
           {!uploading && errorMsg && (
-            <Typography variant="caption" color="error" sx={{ display:'block', mt:1 }}>{errorMsg}</Typography>
+            <Typography variant="caption" color="error" sx={{ display: 'block', mt: 1 }}>{errorMsg}</Typography>
           )}
           {!uploading && backendDown && !errorMsg && (
-            <Typography variant="caption" color="error" sx={{ display:'block', mt:1 }}> Sorry, this function is not working, please try again later.</Typography>
+            <Typography variant="caption" color="error" sx={{ display: 'block', mt: 1 }}> Sorry, this function is not working, please try again later.</Typography>
           )}
         </CardContent>
       </Card>
 
       <Box sx={{ mt: 3 }}>
         {/* Modern SaaS-style single-row filter bar */}
-        <Box sx={{ 
-          display: 'flex', 
-          gap: 1.5, 
-          mb: 2, 
+        <Box sx={{
+          display: 'flex',
+          gap: 1.5,
+          mb: 2,
           p: 1.5,
           bgcolor: '#fafafa',
           borderRadius: 2,
@@ -407,20 +407,20 @@ export default function Dashboard() {
           alignItems: 'center',
           flexWrap: 'wrap'
         }}>
-          <TextField 
-            size="small" 
+          <TextField
+            size="small"
             label="Search"
-            placeholder="Search files..." 
-            value={search} 
+            placeholder="Search files..."
+            value={search}
             onChange={e => setSearch(e.target.value)}
             sx={{ minWidth: 180, flex: 1 }}
             variant="outlined"
           />
-          <TextField 
-            size="small" 
+          <TextField
+            size="small"
             label="Status"
-            select 
-            value={statusFilter} 
+            select
+            value={statusFilter}
             onChange={e => setStatusFilter(e.target.value)}
             sx={{ minWidth: 110 }}
             variant="outlined"
@@ -429,11 +429,11 @@ export default function Dashboard() {
             <MenuItem value="pending">Pending</MenuItem>
             <MenuItem value="approved">Approved</MenuItem>
           </TextField>
-          <TextField 
-            size="small" 
+          <TextField
+            size="small"
             label="Watermark"
-            select 
-            value={wmFilter} 
+            select
+            value={wmFilter}
             onChange={e => setWmFilter(e.target.value)}
             sx={{ minWidth: 120 }}
             variant="outlined"
@@ -442,11 +442,11 @@ export default function Dashboard() {
             <MenuItem value="yes">Applied</MenuItem>
             <MenuItem value="no">Not Applied</MenuItem>
           </TextField>
-          <TextField 
-            size="small" 
+          <TextField
+            size="small"
             label="Signature"
-            select 
-            value={sigFilter} 
+            select
+            value={sigFilter}
             onChange={e => setSigFilter(e.target.value)}
             sx={{ minWidth: 120 }}
             variant="outlined"
@@ -455,14 +455,14 @@ export default function Dashboard() {
             <MenuItem value="yes">Applied</MenuItem>
             <MenuItem value="no">Not Applied</MenuItem>
           </TextField>
-          
+
           {/* Time Filter Icon with Description */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Tooltip title="Uploaded Time Filter">
-              <IconButton 
+              <IconButton
                 size="small"
                 onClick={e => setTimeFilterAnchor(e.currentTarget)}
-                sx={{ 
+                sx={{
                   border: '1px solid #d0d7de',
                   borderRadius: 1,
                   bgcolor: isTimeFilterActive() ? '#e3f2fd' : 'transparent',
@@ -473,12 +473,12 @@ export default function Dashboard() {
                 <AccessTimeIcon fontSize="small" />
               </IconButton>
             </Tooltip>
-            
+
             {/* Filter Description */}
             {isTimeFilterActive() && getTimeFilterDescription() && (
-              <Typography 
-                variant="caption" 
-                sx={{ 
+              <Typography
+                variant="caption"
+                sx={{
                   color: '#1976d2',
                   fontWeight: 500,
                   px: 1,
@@ -495,9 +495,9 @@ export default function Dashboard() {
           </Box>
 
           {(search || statusFilter !== 'all' || wmFilter !== 'all' || sigFilter !== 'all' || isTimeFilterActive()) && (
-            <Button 
-              size="small" 
-              variant="outlined" 
+            <Button
+              size="small"
+              variant="outlined"
               onClick={() => {
                 setSearch('');
                 setStatusFilter('all');
@@ -505,7 +505,7 @@ export default function Dashboard() {
                 setSigFilter('all');
                 clearTimeFilter();
               }}
-              sx={{ 
+              sx={{
                 textTransform: 'none',
                 borderColor: '#d0d7de',
                 color: '#656d76',
@@ -535,82 +535,82 @@ export default function Dashboard() {
               Show files uploaded within the selected time range
             </Typography>
           </Box>
-          
+
           <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs 
-              value={timeFilterTab} 
+            <Tabs
+              value={timeFilterTab}
               onChange={(e, newValue) => setTimeFilterTab(newValue)}
               variant="fullWidth"
               sx={{ minHeight: 40 }}
             >
-              <Tab 
-                label="Relative" 
-                sx={{ 
-                  minHeight: 40, 
+              <Tab
+                label="Relative"
+                sx={{
+                  minHeight: 40,
                   fontSize: '0.875rem',
                   textTransform: 'none',
                   fontWeight: timeFilterTab === 0 ? 600 : 400
-                }} 
+                }}
               />
-              <Tab 
-                label="Custom" 
-                sx={{ 
-                  minHeight: 40, 
+              <Tab
+                label="Custom"
+                sx={{
+                  minHeight: 40,
                   fontSize: '0.875rem',
                   textTransform: 'none',
                   fontWeight: timeFilterTab === 1 ? 600 : 400
-                }} 
+                }}
               />
-              <Tab 
-                label="Date Range" 
-                sx={{ 
-                  minHeight: 40, 
+              <Tab
+                label="Date Range"
+                sx={{
+                  minHeight: 40,
                   fontSize: '0.875rem',
                   textTransform: 'none',
                   fontWeight: timeFilterTab === 2 ? 600 : 400
-                }} 
+                }}
               />
             </Tabs>
           </Box>
-          
+
           <Box sx={{ p: 2 }}>
             {/* Relative Time Tab */}
             {timeFilterTab === 0 && (
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Button 
-                  size="small" 
+                <Button
+                  size="small"
                   variant={timeRange === 'hour' ? 'contained' : 'outlined'}
                   onClick={() => setTimeRange('hour')}
                   sx={{ justifyContent: 'flex-start', textTransform: 'none' }}
                 >
                   Last Hour
                 </Button>
-                <Button 
-                  size="small" 
+                <Button
+                  size="small"
                   variant={timeRange === 'today' ? 'contained' : 'outlined'}
                   onClick={() => setTimeRange('today')}
                   sx={{ justifyContent: 'flex-start', textTransform: 'none' }}
                 >
                   Today
                 </Button>
-                <Button 
-                  size="small" 
+                <Button
+                  size="small"
                   variant={timeRange === 'day' ? 'contained' : 'outlined'}
                   onClick={() => setTimeRange('day')}
                   sx={{ justifyContent: 'flex-start', textTransform: 'none' }}
                 >
                   Last 24h
                 </Button>
-                <Button 
-                  size="small" 
+                <Button
+                  size="small"
                   variant={timeRange === 'week' ? 'contained' : 'outlined'}
                   onClick={() => setTimeRange('week')}
                   sx={{ justifyContent: 'flex-start', textTransform: 'none' }}
                 >
                   Last Week
                 </Button>
-                <Button 
-                  size="small" 
+                <Button
+                  size="small"
                   variant={timeRange === 'month' ? 'contained' : 'outlined'}
                   onClick={() => setTimeRange('month')}
                   sx={{ justifyContent: 'flex-start', textTransform: 'none' }}
@@ -707,7 +707,7 @@ export default function Dashboard() {
           </Box>
 
           <Divider />
-          
+
           <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', p: 2 }}>
             <Button
               size="small"
@@ -728,11 +728,11 @@ export default function Dashboard() {
           </Box>
         </Popover>
         {selected.length > 0 && (
-          <Box sx={{ mb:1, display:'flex', alignItems:'center', gap:1, px:1.25, py:0.75, borderRadius:1, bgcolor:(theme)=> theme.palette.mode==='dark' ? 'rgba(255,255,255,0.08)' : '#f1f5f9', border:'1px solid', borderColor:(theme)=> theme.palette.mode==='dark' ? 'rgba(255,255,255,0.15)' : '#dbe2ea' }}>
-            <Typography variant="body2" sx={{ fontWeight:600, color:'text.primary' }}>{selected.length} selected</Typography>
+          <Box sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1, px: 1.25, py: 0.75, borderRadius: 1, bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : '#f1f5f9', border: '1px solid', borderColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.15)' : '#dbe2ea' }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>{selected.length} selected</Typography>
             <Tooltip title="Download selected as ZIP"><span><Button size="small" variant="contained" onClick={bulkDownload} disabled={!selected.length}>Download ZIP</Button></span></Tooltip>
             <Tooltip title="Delete selected"><span><Button size="small" variant="outlined" color="error" onClick={bulkDelete} disabled={!selected.length}>Delete</Button></span></Tooltip>
-            <Button size="small" onClick={()=> setSelected([])} sx={{ textTransform:'none', ml:0.5 }}>Clear</Button>
+            <Button size="small" onClick={() => setSelected([])} sx={{ textTransform: 'none', ml: 0.5 }}>Clear</Button>
           </Box>
         )}
         <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #e0e0e0', borderRadius: 2 }}>
@@ -742,28 +742,28 @@ export default function Dashboard() {
                 <TableCell padding="checkbox">
                   <Checkbox
                     size="small"
-                    indeterminate={selected.length>0 && selected.length < allVisibleIds.length}
-                    checked={allVisibleIds.length>0 && selected.length===allVisibleIds.length}
+                    indeterminate={selected.length > 0 && selected.length < allVisibleIds.length}
+                    checked={allVisibleIds.length > 0 && selected.length === allVisibleIds.length}
                     onChange={toggleSelectAll}
                   />
                 </TableCell>
-                <TableCell sortDirection={orderBy==='id'?order:false}>
-                  <TableSortLabel active={orderBy==='id'} direction={orderBy==='id'?order:'asc'} onClick={()=>handleSort('id')}>ID</TableSortLabel>
+                <TableCell sortDirection={orderBy === 'id' ? order : false}>
+                  <TableSortLabel active={orderBy === 'id'} direction={orderBy === 'id' ? order : 'asc'} onClick={() => handleSort('id')}>ID</TableSortLabel>
                 </TableCell>
-                <TableCell sortDirection={orderBy==='name'?order:false}>
-                  <TableSortLabel active={orderBy==='name'} direction={orderBy==='name'?order:'asc'} onClick={()=>handleSort('name')}>Name</TableSortLabel>
+                <TableCell sortDirection={orderBy === 'name' ? order : false}>
+                  <TableSortLabel active={orderBy === 'name'} direction={orderBy === 'name' ? order : 'asc'} onClick={() => handleSort('name')}>Name</TableSortLabel>
                 </TableCell>
-                <TableCell sortDirection={orderBy==='uploaded'?order:false}>
-                  <TableSortLabel active={orderBy==='uploaded'} direction={orderBy==='uploaded'?order:'asc'} onClick={()=>handleSort('uploaded')}>Uploaded</TableSortLabel>
+                <TableCell sortDirection={orderBy === 'uploaded' ? order : false}>
+                  <TableSortLabel active={orderBy === 'uploaded'} direction={orderBy === 'uploaded' ? order : 'asc'} onClick={() => handleSort('uploaded')}>Uploaded</TableSortLabel>
                 </TableCell>
-                <TableCell sortDirection={orderBy==='status'?order:false}>
-                  <TableSortLabel active={orderBy==='status'} direction={orderBy==='status'?order:'asc'} onClick={()=>handleSort('status')}>Status</TableSortLabel>
+                <TableCell sortDirection={orderBy === 'status' ? order : false}>
+                  <TableSortLabel active={orderBy === 'status'} direction={orderBy === 'status' ? order : 'asc'} onClick={() => handleSort('status')}>Status</TableSortLabel>
                 </TableCell>
-                <TableCell sortDirection={orderBy==='watermark'?order:false}>
-                  <TableSortLabel active={orderBy==='watermark'} direction={orderBy==='watermark'?order:'asc'} onClick={()=>handleSort('watermark')}>Watermark</TableSortLabel>
+                <TableCell sortDirection={orderBy === 'watermark' ? order : false}>
+                  <TableSortLabel active={orderBy === 'watermark'} direction={orderBy === 'watermark' ? order : 'asc'} onClick={() => handleSort('watermark')}>Watermark</TableSortLabel>
                 </TableCell>
-                <TableCell sortDirection={orderBy==='signature'?order:false}>
-                  <TableSortLabel active={orderBy==='signature'} direction={orderBy==='signature'?order:'asc'} onClick={()=>handleSort('signature')}>Signature</TableSortLabel>
+                <TableCell sortDirection={orderBy === 'signature' ? order : false}>
+                  <TableSortLabel active={orderBy === 'signature'} direction={orderBy === 'signature' ? order : 'asc'} onClick={() => handleSort('signature')}>Signature</TableSortLabel>
                 </TableCell>
                 <TableCell align="right">Actions</TableCell>
               </TableRow>
@@ -773,11 +773,11 @@ export default function Dashboard() {
                 const status = f.status === 'approved' ? 'approved' : 'pending';
                 const dt = f.createdAt ? new Date(f.createdAt) : null;
                 const dateStr = dt ? dt.toLocaleDateString() : '-';
-                const timeStr = dt ? dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second:'2-digit' }) : '';
+                const timeStr = dt ? dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '';
                 return (
                   <TableRow key={f.id} hover selected={selected.includes(f.id)}>
                     <TableCell padding="checkbox">
-                      <Checkbox size="small" checked={selected.includes(f.id)} onChange={()=>toggleOne(f.id)} />
+                      <Checkbox size="small" checked={selected.includes(f.id)} onChange={() => toggleOne(f.id)} />
                     </TableCell>
                     <TableCell>{f.id}</TableCell>
                     <TableCell>
@@ -785,7 +785,7 @@ export default function Dashboard() {
                       <Typography variant="caption" color="text.secondary">{(f.size / 1024).toFixed(1)} KB</Typography>
                     </TableCell>
                     <TableCell>
-                      <Typography variant="caption" sx={{ display:'block' }}>{dateStr}</Typography>
+                      <Typography variant="caption" sx={{ display: 'block' }}>{dateStr}</Typography>
                       <Typography variant="caption" color="text.secondary">{timeStr}</Typography>
                     </TableCell>
                     <TableCell>
@@ -799,9 +799,9 @@ export default function Dashboard() {
                   </TableRow>
                 );
               })}
-        {!files.length && (
+              {!files.length && (
                 <TableRow>
-          <TableCell colSpan={8} align="center" sx={{ py: 6, color: 'text.secondary' }}>No files yet.</TableCell>
+                  <TableCell colSpan={8} align="center" sx={{ py: 6, color: 'text.secondary' }}>No files yet.</TableCell>
                 </TableRow>
               )}
             </TableBody>
@@ -818,7 +818,7 @@ export default function Dashboard() {
           <ListItemIcon><DownloadIcon fontSize="small" /></ListItemIcon>
           Download
         </MenuItem>
-        <MenuItem onClick={handleDelete} sx={{ color:'error.main' }}>
+        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <ListItemIcon><DeleteOutlineIcon fontSize="small" /></ListItemIcon>
           Delete
         </MenuItem>

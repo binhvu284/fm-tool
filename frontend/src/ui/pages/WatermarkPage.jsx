@@ -39,9 +39,9 @@ export default function WatermarkPage() {
   const [busy, setBusy] = useState(false);
   const [colorAnchor, setColorAnchor] = useState(null); // popover anchor
   const colorInputRef = useRef(null);
-  const presetColors = ['#000000','#ffffff','#ff0000','#00a3ff','#ff9900','#00aa55','#8000ff'];
+  const presetColors = ['#000000', '#ffffff', '#ff0000', '#00a3ff', '#ff9900', '#00aa55', '#8000ff'];
   const fileIdRef = useRef(fileId);
-  useEffect(()=> { fileIdRef.current = fileId; }, [fileId]);
+  useEffect(() => { fileIdRef.current = fileId; }, [fileId]);
 
   // Reset to default settings
   const resetToDefaults = () => {
@@ -62,9 +62,10 @@ export default function WatermarkPage() {
   };
 
   // Load files + restore queue from localStorage
-  useEffect(() => { (async () => { 
-    try { const { data } = await http.get('/api/files'); setFiles(data); } catch {}
-  })();
+  useEffect(() => {
+    (async () => {
+      try { const { data } = await http.get('/api/files'); setFiles(data); } catch { }
+    })();
   }, []);
 
   // Restore queue once on mount
@@ -75,13 +76,13 @@ export default function WatermarkPage() {
         setQueue(saved.map(String));
         if (!fileId) setFileId(String(saved[0]));
       }
-    } catch {}
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    } catch { }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Persist queue whenever it changes
   useEffect(() => {
-    try { localStorage.setItem('wm_queue', JSON.stringify(queue)); } catch {}
+    try { localStorage.setItem('wm_queue', JSON.stringify(queue)); } catch { }
   }, [queue]);
 
   // Listen for external deletions (from Dashboard) and remove from queue
@@ -92,7 +93,7 @@ export default function WatermarkPage() {
       setQueue(q => {
         const filtered = q.filter(id => !ids.includes(String(id)));
         if (filtered.length !== q.length) {
-          try { localStorage.setItem('wm_queue', JSON.stringify(filtered)); } catch {}
+          try { localStorage.setItem('wm_queue', JSON.stringify(filtered)); } catch { }
           if (!filtered.includes(fileIdRef.current)) {
             // adjust selected file
             const next = filtered[0] || '';
@@ -109,14 +110,14 @@ export default function WatermarkPage() {
     return () => window.removeEventListener('wm-files-deleted', handler);
   }, []);
 
-  const reloadFiles = async () => { try { const { data } = await http.get('/api/files'); setFiles(data); } catch {} };
+  const reloadFiles = async () => { try { const { data } = await http.get('/api/files'); setFiles(data); } catch { } };
 
   const selected = useMemo(() => files.find((f) => String(f.id) === String(fileId)), [files, fileId]);
 
   const removeFromQueue = (id) => setQueue((q) => q.filter((x) => x !== id));
   const openAddDialog = () => { setSelectToAdd([]); setAddOpen(true); };
   const closeAddDialog = () => setAddOpen(false);
-  const toggleSelect = (id) => setSelectToAdd(prev => prev.includes(id) ? prev.filter(x=>x!==id) : [...prev, id]);
+  const toggleSelect = (id) => setSelectToAdd(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   const confirmAdd = async () => {
     const ids = selectToAdd.filter(id => !queue.includes(id));
     if (!ids.length) { closeAddDialog(); return; }
@@ -137,7 +138,7 @@ export default function WatermarkPage() {
   };
 
   const buildPayload = (id) => {
-  const payload = { fileId: Number(id), type: mode, options: { opacity: opacity / 100, rotate, position, mosaic } };
+    const payload = { fileId: Number(id), type: mode, options: { opacity: opacity / 100, rotate, position, mosaic } };
     if (mode === 'text') {
       payload.text = text;
       payload.options.fontSize = fontSize || 12; // Ensure valid fontSize
@@ -192,13 +193,13 @@ export default function WatermarkPage() {
       }
       setProcessedCount(c => c + 1);
     }
-  setResultUrls(results);
-  await reloadFiles();
+    setResultUrls(results);
+    await reloadFiles();
     // broadcast update so dashboard refreshes
-    try { localStorage.setItem('wm_update', Date.now().toString()); } catch {}
-  // Clear queue after apply per requirement
-  setQueue([]);
-  try { localStorage.setItem('wm_queue', '[]'); } catch {}
+    try { localStorage.setItem('wm_update', Date.now().toString()); } catch { }
+    // Clear queue after apply per requirement
+    setQueue([]);
+    try { localStorage.setItem('wm_queue', '[]'); } catch { }
     setProcessing(false);
   };
 
@@ -246,13 +247,13 @@ export default function WatermarkPage() {
                 <TextField label="Text" fullWidth size="small" value={text} onChange={(e) => setText(e.target.value)} sx={{ mb: 2 }} />
                 <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
                   <TextField label="Font" select size="small" value={font} onChange={(e) => setFont(e.target.value)} sx={{ flex: 1 }}>
-                    {['Helvetica','Times','Courier'].map(f => <MenuItem key={f} value={f}>{f}</MenuItem>)}
+                    {['Helvetica', 'Times', 'Courier'].map(f => <MenuItem key={f} value={f}>{f}</MenuItem>)}
                   </TextField>
-                  <TextField 
-                    label="Size" 
-                    size="small" 
-                    type="number" 
-                    value={fontSize} 
+                  <TextField
+                    label="Size"
+                    size="small"
+                    type="number"
+                    value={fontSize}
                     onChange={(e) => {
                       const value = e.target.value;
                       if (value === '') {
@@ -274,61 +275,61 @@ export default function WatermarkPage() {
                     inputProps={{ min: 1, max: 200 }}
                   />
                 </Box>
-                <Box sx={{ display: 'flex', alignItems:'center', gap:1, mb:2 }}>
-                  <ToggleButtonGroup size="small" exclusive sx={{ mr:1 }}>
-                    <ToggleButton value="bold" selected={bold} onChange={()=> setBold(b=>!b)} aria-label="Bold" title="Bold">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <ToggleButtonGroup size="small" exclusive sx={{ mr: 1 }}>
+                    <ToggleButton value="bold" selected={bold} onChange={() => setBold(b => !b)} aria-label="Bold" title="Bold">
                       <FormatBoldIcon fontSize="small" />
                     </ToggleButton>
-                    <ToggleButton value="underline" selected={underline} onChange={()=> setUnderline(u=>!u)} aria-label="Underline" title="Underline">
+                    <ToggleButton value="underline" selected={underline} onChange={() => setUnderline(u => !u)} aria-label="Underline" title="Underline">
                       <FormatUnderlinedIcon fontSize="small" />
                     </ToggleButton>
                   </ToggleButtonGroup>
-                  <Button variant="outlined" size="small" onClick={(e)=> { setColorAnchor(e.currentTarget); setTimeout(()=> { try { colorInputRef.current?.click(); } catch {} }, 0); }} sx={{ px:1.5, display:'flex', alignItems:'center', gap:1 }}>
-                    <Box sx={{ width:18, height:18, borderRadius:'4px', bgcolor: color, border:'1px solid #ccc' }} />
-                    <Typography variant="caption" sx={{ textTransform:'none' }}>{color}</Typography>
+                  <Button variant="outlined" size="small" onClick={(e) => { setColorAnchor(e.currentTarget); setTimeout(() => { try { colorInputRef.current?.click(); } catch { } }, 0); }} sx={{ px: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ width: 18, height: 18, borderRadius: '4px', bgcolor: color, border: '1px solid #ccc' }} />
+                    <Typography variant="caption" sx={{ textTransform: 'none' }}>{color}</Typography>
                   </Button>
                   <Popover
                     open={Boolean(colorAnchor)}
                     anchorEl={colorAnchor}
-                    onClose={()=> setColorAnchor(null)}
-                    anchorOrigin={{ vertical:'bottom', horizontal:'left' }}
-                    transformOrigin={{ vertical:'top', horizontal:'left' }}
-                    PaperProps={{ sx:{ p:1.5 } }}
+                    onClose={() => setColorAnchor(null)}
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                    transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+                    PaperProps={{ sx: { p: 1.5 } }}
                   >
-                    <Box sx={{ display:'flex', flexDirection:'column', gap:1 }}>
-                      <Typography variant="caption" sx={{ fontWeight:600, letterSpacing:.5 }}>Select color</Typography>
-                      <Box sx={{ display:'flex', alignItems:'center', gap:1 }}>
-                        <Box sx={{ position:'relative', width:48, height:36 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <Typography variant="caption" sx={{ fontWeight: 600, letterSpacing: .5 }}>Select color</Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box sx={{ position: 'relative', width: 48, height: 36 }}>
                           <input
                             ref={colorInputRef}
                             type="color"
                             value={color}
-                            onChange={(e)=> setColor(e.target.value)}
-                            style={{ width: '48px', height:'36px', padding:0, border:'1px solid #ccc', background:'transparent', cursor:'pointer', borderRadius:4 }}
+                            onChange={(e) => setColor(e.target.value)}
+                            style={{ width: '48px', height: '36px', padding: 0, border: '1px solid #ccc', background: 'transparent', cursor: 'pointer', borderRadius: 4 }}
                           />
                         </Box>
                         <TextField
                           size="small"
                           label="Hex"
                           value={color}
-                          onChange={(e)=> {
+                          onChange={(e) => {
                             let v = e.target.value.trim();
                             if (!v.startsWith('#')) v = '#' + v;
                             if (v === '#' || /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(v)) setColor(v);
                           }}
-                          sx={{ width:140 }}
-                          inputProps={{ maxLength: 7, style:{ fontFamily:'monospace' } }}
+                          sx={{ width: 140 }}
+                          inputProps={{ maxLength: 7, style: { fontFamily: 'monospace' } }}
                         />
                       </Box>
-                      <Box sx={{ display:'flex', flexWrap:'wrap', gap:0.5 }}>
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                         {presetColors.map(pc => (
-                          <Box key={pc} onClick={()=> setColor(pc)} title={pc}
-                               sx={{ width:22, height:22, borderRadius:'4px', bgcolor: pc, border: pc.toLowerCase()==='#ffffff'?'1px solid #ccc':'1px solid rgba(0,0,0,0.15)', cursor:'pointer', boxShadow: color===pc? '0 0 0 2px #1976d2':'none', transition:'box-shadow .15s' }} />
+                          <Box key={pc} onClick={() => setColor(pc)} title={pc}
+                            sx={{ width: 22, height: 22, borderRadius: '4px', bgcolor: pc, border: pc.toLowerCase() === '#ffffff' ? '1px solid #ccc' : '1px solid rgba(0,0,0,0.15)', cursor: 'pointer', boxShadow: color === pc ? '0 0 0 2px #1976d2' : 'none', transition: 'box-shadow .15s' }} />
                         ))}
                       </Box>
-                      <Box sx={{ display:'flex', justifyContent:'space-between', alignItems:'center', pt:0.5 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pt: 0.5 }}>
                         <Typography variant="caption" color="text.secondary">{color}</Typography>
-                        <Button size="small" onClick={()=> setColorAnchor(null)}>Close</Button>
+                        <Button size="small" onClick={() => setColorAnchor(null)}>Close</Button>
                       </Box>
                     </Box>
                   </Popover>
@@ -342,19 +343,19 @@ export default function WatermarkPage() {
                   <input hidden type="file" accept="image/*" onChange={handleImageSelect} />
                 </Button>
                 {imagePreview && (
-                  <Box sx={{ mt:1 }}>
-                    <img src={imagePreview} alt="preview" style={{ maxWidth:'100%', maxHeight:120, objectFit:'contain', borderRadius:4, border:'1px solid #eee' }} />
+                  <Box sx={{ mt: 1 }}>
+                    <img src={imagePreview} alt="preview" style={{ maxWidth: '100%', maxHeight: 120, objectFit: 'contain', borderRadius: 4, border: '1px solid #eee' }} />
                   </Box>
                 )}
                 {imageData && (
                   <Box sx={{ mt: 2 }}>
                     <Typography variant="caption">Size: {imageSize}%</Typography>
-                    <Slider 
-                      size="small" 
-                      value={imageSize} 
-                      onChange={(_, v) => setImageSize(v)} 
-                      min={10} 
-                      max={200} 
+                    <Slider
+                      size="small"
+                      value={imageSize}
+                      onChange={(_, v) => setImageSize(v)}
+                      min={10}
+                      max={200}
                       step={5}
                       valueLabelDisplay="auto"
                       valueLabelFormat={(value) => `${value}%`}
@@ -364,49 +365,49 @@ export default function WatermarkPage() {
               </Box>
             )}
             <Divider sx={{ my: 2 }} />
-            <Box sx={{ mb:2 }}>
-              <Typography variant="caption" sx={{ display:'block', mb:1 }}>Position:</Typography>
-              <Box sx={{ display:'grid', gridTemplateColumns:'repeat(3,32px)', gridTemplateRows:'repeat(3,32px)', gap:0.5, width:'fit-content', mb:1 }}>
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="caption" sx={{ display: 'block', mb: 1 }}>Position:</Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3,32px)', gridTemplateRows: 'repeat(3,32px)', gap: 0.5, width: 'fit-content', mb: 1 }}>
                 {[
-                  'top-left','top-center','top-right',
-                  'middle-left','center','middle-right',
-                  'bottom-left','bottom-center','bottom-right'
+                  'top-left', 'top-center', 'top-right',
+                  'middle-left', 'center', 'middle-right',
+                  'bottom-left', 'bottom-center', 'bottom-right'
                 ].map(p => (
-                  <Box key={p} onClick={()=> setPosition(p)} sx={{ width:32, height:32, border:'1px dashed #bbb', cursor:'pointer', position:'relative', bgcolor: position===p? 'primary.light':'transparent', '&:hover':{ bgcolor: position===p? 'primary.light':'#f5f5f5' } }}>
-                    {position===p && <Box sx={{ width:10, height:10, bgcolor:'error.main', borderRadius:'50%', position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)' }} />}
+                  <Box key={p} onClick={() => setPosition(p)} sx={{ width: 32, height: 32, border: '1px dashed #bbb', cursor: 'pointer', position: 'relative', bgcolor: position === p ? 'primary.light' : 'transparent', '&:hover': { bgcolor: position === p ? 'primary.light' : '#f5f5f5' } }}>
+                    {position === p && <Box sx={{ width: 10, height: 10, bgcolor: 'error.main', borderRadius: '50%', position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)' }} />}
                   </Box>
                 ))}
               </Box>
-              <FormControlLabel control={<Checkbox size="small" checked={mosaic} onChange={(e)=> setMosaic(e.target.checked)} />} label="Mosaic" />
+              <FormControlLabel control={<Checkbox size="small" checked={mosaic} onChange={(e) => setMosaic(e.target.checked)} />} label="Mosaic" />
             </Box>
             <Box sx={{ mb: 2 }}>
               <Typography variant="caption">Opacity: {opacity}%</Typography>
-              <Slider size="small" value={opacity} onChange={(_,v)=> setOpacity(v)} min={5} max={90} />
+              <Slider size="small" value={opacity} onChange={(_, v) => setOpacity(v)} min={5} max={90} />
             </Box>
             <Box sx={{ mb: 2 }}>
               <Typography variant="caption">Rotation: {rotate}°</Typography>
-              <Slider size="small" value={rotate} onChange={(_,v)=> setRotate(v)} min={-180} max={180} />
+              <Slider size="small" value={rotate} onChange={(_, v) => setRotate(v)} min={-180} max={180} />
             </Box>
             <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
-              <Button 
-                disabled={!fileId || previewBusy || (mode==='image' && !imageData)} 
-                onClick={generatePreview} 
-                variant="outlined" 
+              <Button
+                disabled={!fileId || previewBusy || (mode === 'image' && !imageData)}
+                onClick={generatePreview}
+                variant="outlined"
                 sx={{ flex: 1 }}
               >
                 Apply Setting & Preview
               </Button>
-              <Button 
-                onClick={resetToDefaults} 
-                variant="text" 
+              <Button
+                onClick={resetToDefaults}
+                variant="text"
                 size="small"
-                sx={{ 
+                sx={{
                   minWidth: 'auto',
                   px: 2,
                   color: 'text.secondary',
-                  '&:hover': { 
+                  '&:hover': {
                     bgcolor: 'action.hover',
-                    color: 'text.primary' 
+                    color: 'text.primary'
                   }
                 }}
               >
@@ -416,9 +417,9 @@ export default function WatermarkPage() {
           </Card>
         </Grid>
         {/* Preview */}
-        <Grid item xs={12} md={7} sx={{ display:'flex', flexDirection:'column' }}>
-          <Card sx={{ p:2, height: 'calc(100vh - 140px)', display:'flex', flexDirection:'column' }}>
-            <Box sx={{ display:'flex', alignItems:'center', justifyContent:'space-between', mb:1, gap:1 }}>
+        <Grid item xs={12} md={7} sx={{ display: 'flex', flexDirection: 'column' }}>
+          <Card sx={{ p: 2, height: 'calc(100vh - 140px)', display: 'flex', flexDirection: 'column' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1, gap: 1 }}>
               <Typography variant="subtitle2">Preview</Typography>
               {queue.length > 0 && (
                 <TextField
@@ -426,9 +427,9 @@ export default function WatermarkPage() {
                   size="small"
                   label="File"
                   value={fileId || ''}
-                  onChange={(e)=> { 
+                  onChange={(e) => {
                     const newId = e.target.value;
-                    setFileId(newId); 
+                    setFileId(newId);
                     setPreviewSrc(null);
                     // Auto-generate preview for the new file
                     if (newId && (mode !== 'image' || imageData)) {
@@ -444,19 +445,19 @@ export default function WatermarkPage() {
                 </TextField>
               )}
             </Box>
-            <Box sx={{ flex:1, minHeight:0, bgcolor:'#fafafa', border:'1px dashed #ddd', borderRadius:1, display:'flex', alignItems:'center', justifyContent:'center', p:1, overflow:'hidden' }}>
+            <Box sx={{ flex: 1, minHeight: 0, bgcolor: '#fafafa', border: '1px dashed #ddd', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', p: 1, overflow: 'hidden' }}>
               {!selected && <Typography variant="body2" color="text.secondary">Select a file and adjust settings.</Typography>}
               {selected && !previewSrc && !previewBusy && (
                 <Typography variant="body2" color="text.secondary">Click "Apply Setting" to preview.</Typography>
               )}
               {previewBusy && <Typography variant="body2" color="text.secondary">Generating preview...</Typography>}
               {previewSrc && (
-                <iframe title="preview" src={previewSrc} style={{ border:'none', width:'100%', height:'100%' }} />
+                <iframe title="preview" src={previewSrc} style={{ border: 'none', width: '100%', height: '100%' }} />
               )}
             </Box>
             {/* Result links removed per new workflow */}
-            <Box sx={{ mt:2, display:'flex', justifyContent:'flex-end' }}>
-              <Button disabled={!queue.length || processing || (mode==='image' && !imageData)} onClick={submit} variant="contained">Apply Watermark</Button>
+            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+              <Button disabled={!queue.length || processing || (mode === 'image' && !imageData)} onClick={submit} variant="contained">Apply Watermark</Button>
             </Box>
           </Card>
         </Grid>
@@ -466,11 +467,11 @@ export default function WatermarkPage() {
         <DialogContent dividers>
           <List dense>
             {files.filter(f => !queue.includes(String(f.id)) && !f.watermarkApplied).map(f => (
-              <ListItem key={f.id} button onClick={()=> toggleSelect(String(f.id))} disabled={busy}>
+              <ListItem key={f.id} button onClick={() => toggleSelect(String(f.id))} disabled={busy}>
                 <ListItemIcon>
                   <Checkbox edge="start" size="small" checked={selectToAdd.includes(String(f.id))} tabIndex={-1} disableRipple />
                 </ListItemIcon>
-                <ListItemText primary={f.originalName} secondary={`${(f.size/1024).toFixed(1)} KB`} />
+                <ListItemText primary={f.originalName} secondary={`${(f.size / 1024).toFixed(1)} KB`} />
               </ListItem>
             ))}
             {!files.filter(f => !queue.includes(String(f.id)) && !f.watermarkApplied).length && (
@@ -478,14 +479,14 @@ export default function WatermarkPage() {
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                   No files without watermark available.
                 </Typography>
-                <Link 
-                  component="button" 
-                  variant="body2" 
+                <Link
+                  component="button"
+                  variant="body2"
                   onClick={() => {
                     setAddOpen(false);
                     navigate('/');
                   }}
-                  sx={{ 
+                  sx={{
                     textDecoration: 'underline',
                     color: 'primary.main',
                     '&:hover': { color: 'primary.dark' }
@@ -502,9 +503,9 @@ export default function WatermarkPage() {
           <Button onClick={confirmAdd} disabled={!selectToAdd.length || busy} variant="contained">Add</Button>
         </DialogActions>
       </Dialog>
-      <Backdrop open={processing} sx={{ color:'#fff', zIndex: (theme)=> theme.zIndex.drawer + 10, flexDirection:'column', gap:2 }}>
+      <Backdrop open={processing} sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 10, flexDirection: 'column', gap: 2 }}>
         <CircularProgress color="inherit" />
-        <Typography variant="body2">[{processedCount}] file{processedCount===1?'':'s'} have been add watermark.</Typography>
+        <Typography variant="body2">[{processedCount}] file{processedCount === 1 ? '' : 's'} have been add watermark.</Typography>
       </Backdrop>
     </Container>
   );

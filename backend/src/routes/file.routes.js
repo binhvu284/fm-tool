@@ -35,6 +35,7 @@ router.post(
   FileController.upload
 );
 router.get("/", authenticate, FileController.list);
+router.get("/:id/preview", authenticate, FileController.preview);
 router.delete("/all", authenticate, FileController.removeAll);
 router.post("/bulk/delete", authenticate, FileController.bulkDelete);
 router.post("/bulk/download", authenticate, FileController.bulkDownload);

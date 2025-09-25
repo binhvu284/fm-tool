@@ -191,3 +191,23 @@ export const bulkDownload = async (req, res) => {
   }
   archive.finalize();
 };
+
+export const preview = async (req, res) => {
+  const id = Number(req.params.id);
+  let record;
+  if (usingMemory) {
+    record = memory.files.find((f) => f.id === id && f.userId === req.user.sub);
+  } else {
+    record = await File.findOne({ where: { id, userId: req.user.sub } });
+  }
+  if (!record) return res.status(404).json({ message: "File not found" });
+
+  // For now, return the static file URL for preview
+  // In a full implementation, you might want to generate actual thumbnails
+  res.json({
+    previewUrl: `/static/${record.storedName}`,
+    fileName: record.originalName,
+    fileSize: record.size,
+    mimeType: record.mimeType
+  });
+};
