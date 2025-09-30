@@ -1,0 +1,53 @@
+{
+  "meta": {
+    "version": 1,
+    "updatedAt": "2025-09-30T14:43:46.047Z"
+  },
+  "sequences": {
+    "userId": 5,
+    "fileId": 1,
+    "reviewId": 1,
+    "signatureId": 1
+  },
+  "users": [
+    {
+      "id": 1,
+      "email": "dev@example.com",
+      "passwordHash": "$2a$10$dev-placeholder-no-login-when-auth-disabled",
+      "role": "admin",
+      "createdAt": "",
+      "updatedAt": ""
+    },
+    {
+      "id": 2,
+      "email": "admin",
+      "passwordHash": "$2a$10$ACSjq1H9AMMY9Eksk2kJjujQxKkcPE6kgu5nzxqRALqTx.R6WlNzy",
+      "role": "admin",
+      "createdAt": "2025-09-29T04:34:38.078Z",
+      "updatedAt": "2025-09-29T04:34:38.078Z"
+    },
+    {
+      "id": 3,
+      "name": "thomas",
+      "email": "thomas@gmail.com",
+      "passwordHash": "$2a$10$1F6EOA72DlaXOiM964ZmCujMsjd6OV.h.1GBDhLM3rEZNPPeRwXuu",
+      "role": "agent",
+      "active": true,
+      "createdAt": "2025-09-30T00:00:00.000Z",
+      "updatedAt": "2025-09-30T00:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "name": "john",
+      "email": "john@gmail.com",
+      "passwordHash": "$2a$10$PMKjmHfj4p0yDns0r95kxu02zy6lWOuRwdj9at4Z6nP9MpmrNVKLi",
+      "role": "agent",
+      "active": true,
+      "createdAt": "2025-09-30T14:43:46.047Z",
+      "updatedAt": "2025-09-30T14:43:46.047Z"
+    }
+  ],
+  "files": [],
+  "reviews": [],
+  "signatures": []
+}
